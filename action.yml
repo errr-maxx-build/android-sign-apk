@@ -1,0 +1,42 @@
+name: Sign APK
+
+inputs:
+  in:
+    required: true
+    type: string
+
+  out:
+    required: true
+    type: string
+
+  ks:
+    required: true
+    type: string
+
+  ksPass:
+    required: true
+    type: string
+
+  key:
+    required: true
+    type: string
+
+  keyPass:
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+    - name: Sign APK
+      run: |
+        # Variables
+        APK_SIGNER="$(find "$ANDROID_SDK_ROOT/build-tools" -name apksigner | sort -r | head -n 1)"
+        KEYSTORE_FILE='./signing_keystore.jks'
+
+        # Decode keystore
+        echo "${{ inputs.ks }}" | base64 --decode > "$KEYSTORE_FILE"
+
+        # Sign
+        "$APK_SIGNER" sign -v --in "${{ inputs.in }}" --out "${{ inputs.out }}" --ks "$KEYSTORE_FILE" --ks-key-alias "${{ inputs.key }}" --ks-pass "pass:${{ inputs.ksPass }}" --key-pass "pass:${{ inputs.keyPass }}"
+      shell: bash
